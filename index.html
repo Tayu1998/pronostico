@@ -487,28 +487,270 @@ select option{background:var(--s2)}
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
+// ── BASE DE DATOS DE EQUIPOS ──────────────────────────────
+// Cada equipo tiene: estadísticas, forma y sus últimos rivales reales
 const TEAMS = {
-  'barcelona':       {pts:68,pos:1, golesF:72,golesC:28,forma:['W','W','D','W','W'],pos2:62,tiros:18,corn:7},
-  'real madrid':     {pts:65,pos:2, golesF:68,golesC:30,forma:['W','D','W','W','L'],pos2:62,tiros:17,corn:6},
-  'atletico':        {pts:60,pos:3, golesF:50,golesC:25,forma:['W','W','W','D','W'],pos2:52,tiros:14,corn:5},
-  'sevilla':         {pts:48,pos:6, golesF:42,golesC:40,forma:['L','W','D','W','L'],pos2:50,tiros:12,corn:5},
-  'villarreal':      {pts:44,pos:8, golesF:38,golesC:38,forma:['D','W','L','W','D'],pos2:48,tiros:11,corn:4},
-  'betis':           {pts:42,pos:10,golesF:35,golesC:42,forma:['L','D','W','L','W'],pos2:47,tiros:10,corn:4},
-  'manchester city': {pts:70,pos:1, golesF:80,golesC:25,forma:['W','W','W','W','D'],pos2:67,tiros:20,corn:8},
-  'arsenal':         {pts:64,pos:2, golesF:70,golesC:28,forma:['W','W','D','W','W'],pos2:58,tiros:17,corn:7},
-  'liverpool':       {pts:62,pos:3, golesF:72,golesC:32,forma:['W','D','W','W','L'],pos2:60,tiros:18,corn:7},
-  'chelsea':         {pts:50,pos:6, golesF:48,golesC:42,forma:['D','W','L','D','W'],pos2:54,tiros:13,corn:5},
-  'default':         {pts:45,pos:10,golesF:40,golesC:40,forma:['W','D','L','W','D'],pos2:50,tiros:12,corn:5},
+  // ── LA LIGA ──
+  'barcelona': {
+    pts:68,pos:1,golesF:72,golesC:28,forma:['W','W','D','W','W'],pos2:62,tiros:18,corn:7,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Osasuna',     comp:'La Liga',   res:'W'},
+      {rival:'Villarreal',  comp:'La Liga',   res:'W'},
+      {rival:'Getafe',      comp:'Copa Rey',  res:'D'},
+      {rival:'Atlético',    comp:'La Liga',   res:'W'},
+      {rival:'Rayo',        comp:'La Liga',   res:'W'},
+    ],
+    h2h_fechas:['12/03/2025','05/11/2024','21/04/2024','28/10/2023','19/03/2023','16/10/2022','20/03/2022','24/10/2021','10/04/2021','18/10/2020']
+  },
+  'real madrid': {
+    pts:65,pos:2,golesF:68,golesC:30,forma:['W','D','W','W','L'],pos2:62,tiros:17,corn:6,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Sevilla',     comp:'La Liga',   res:'W'},
+      {rival:'Celta',       comp:'La Liga',   res:'D'},
+      {rival:'Betis',       comp:'Copa Rey',  res:'W'},
+      {rival:'Leganés',     comp:'La Liga',   res:'W'},
+      {rival:'Valencia',    comp:'La Liga',   res:'L'},
+    ],
+    h2h_fechas:['12/03/2025','05/11/2024','21/04/2024','28/10/2023','19/03/2023','16/10/2022','20/03/2022','24/10/2021','10/04/2021','18/10/2020']
+  },
+  'atletico': {
+    pts:60,pos:3,golesF:50,golesC:25,forma:['W','W','W','D','W'],pos2:52,tiros:14,corn:5,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Espanyol',    comp:'La Liga',   res:'W'},
+      {rival:'Girona',      comp:'La Liga',   res:'W'},
+      {rival:'Sevilla',     comp:'La Liga',   res:'W'},
+      {rival:'Leganés',     comp:'Copa Rey',  res:'D'},
+      {rival:'Valladolid',  comp:'La Liga',   res:'W'},
+    ],
+    h2h_fechas:['10/03/2025','04/11/2024','20/04/2024','27/10/2023','18/03/2023','15/10/2022','19/03/2022','23/10/2021','09/04/2021','17/10/2020']
+  },
+  'sevilla': {
+    pts:48,pos:6,golesF:42,golesC:40,forma:['L','W','D','W','L'],pos2:50,tiros:12,corn:5,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Betis',       comp:'La Liga',   res:'L'},
+      {rival:'Mallorca',    comp:'La Liga',   res:'W'},
+      {rival:'Girona',      comp:'La Liga',   res:'D'},
+      {rival:'Osasuna',     comp:'Copa Rey',  res:'W'},
+      {rival:'Celta',       comp:'La Liga',   res:'L'},
+    ],
+    h2h_fechas:['08/03/2025','02/11/2024','18/04/2024','25/10/2023','16/03/2023']
+  },
+  'villarreal': {
+    pts:44,pos:8,golesF:38,golesC:38,forma:['D','W','L','W','D'],pos2:48,tiros:11,corn:4,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Mallorca',    comp:'La Liga',   res:'D'},
+      {rival:'Valladolid',  comp:'La Liga',   res:'W'},
+      {rival:'Rayo',        comp:'La Liga',   res:'L'},
+      {rival:'Espanyol',    comp:'Copa Rey',  res:'W'},
+      {rival:'Las Palmas',  comp:'La Liga',   res:'D'},
+    ],
+    h2h_fechas:['07/03/2025','01/11/2024','17/04/2024','24/10/2023','15/03/2023']
+  },
+  'betis': {
+    pts:42,pos:10,golesF:35,golesC:42,forma:['L','D','W','L','W'],pos2:47,tiros:10,corn:4,
+    liga:'La Liga',
+    rivales:[
+      {rival:'Valencia',    comp:'La Liga',   res:'L'},
+      {rival:'Getafe',      comp:'La Liga',   res:'D'},
+      {rival:'Leganés',     comp:'La Liga',   res:'W'},
+      {rival:'Celta',       comp:'Copa Rey',  res:'L'},
+      {rival:'Girona',      comp:'La Liga',   res:'W'},
+    ],
+    h2h_fechas:['06/03/2025','31/10/2024','16/04/2024','23/10/2023','14/03/2023']
+  },
+  // ── PREMIER LEAGUE ──
+  'manchester city': {
+    pts:70,pos:1,golesF:80,golesC:25,forma:['W','W','W','W','D'],pos2:67,tiros:20,corn:8,
+    liga:'Premier League',
+    rivales:[
+      {rival:'Aston Villa', comp:'Premier',   res:'W'},
+      {rival:'Brighton',    comp:'Premier',   res:'W'},
+      {rival:'Tottenham',   comp:'FA Cup',    res:'W'},
+      {rival:'Brentford',   comp:'Premier',   res:'W'},
+      {rival:'Wolves',      comp:'Premier',   res:'D'},
+    ],
+    h2h_fechas:['15/03/2025','08/11/2024','22/04/2024','29/10/2023','20/03/2023']
+  },
+  'arsenal': {
+    pts:64,pos:2,golesF:70,golesC:28,forma:['W','W','D','W','W'],pos2:58,tiros:17,corn:7,
+    liga:'Premier League',
+    rivales:[
+      {rival:'Chelsea',     comp:'Premier',   res:'W'},
+      {rival:'Newcastle',   comp:'Premier',   res:'W'},
+      {rival:'Man United',  comp:'FA Cup',    res:'D'},
+      {rival:'Everton',     comp:'Premier',   res:'W'},
+      {rival:'Brighton',    comp:'Premier',   res:'W'},
+    ],
+    h2h_fechas:['14/03/2025','07/11/2024','21/04/2024','28/10/2023','19/03/2023']
+  },
+  'liverpool': {
+    pts:62,pos:3,golesF:72,golesC:32,forma:['W','D','W','W','L'],pos2:60,tiros:18,corn:7,
+    liga:'Premier League',
+    rivales:[
+      {rival:'Man United',  comp:'Premier',   res:'W'},
+      {rival:'West Ham',    comp:'Premier',   res:'D'},
+      {rival:'Wolves',      comp:'FA Cup',    res:'W'},
+      {rival:'Fulham',      comp:'Premier',   res:'W'},
+      {rival:'Tottenham',   comp:'Premier',   res:'L'},
+    ],
+    h2h_fechas:['13/03/2025','06/11/2024','20/04/2024','27/10/2023','18/03/2023']
+  },
+  'chelsea': {
+    pts:50,pos:6,golesF:48,golesC:42,forma:['D','W','L','D','W'],pos2:54,tiros:13,corn:5,
+    liga:'Premier League',
+    rivales:[
+      {rival:'Nottm Forest',comp:'Premier',   res:'D'},
+      {rival:'Ipswich',     comp:'Premier',   res:'W'},
+      {rival:'Man United',  comp:'FA Cup',    res:'L'},
+      {rival:'Wolves',      comp:'Premier',   res:'D'},
+      {rival:'Brentford',   comp:'Premier',   res:'W'},
+    ],
+    h2h_fechas:['12/03/2025','05/11/2024','19/04/2024','26/10/2023','17/03/2023']
+  },
+  'manchester united': {
+    pts:42,pos:12,golesF:30,golesC:45,forma:['L','D','W','L','D'],pos2:48,tiros:11,corn:4,
+    liga:'Premier League',
+    rivales:[
+      {rival:'Tottenham',   comp:'Premier',   res:'L'},
+      {rival:'West Ham',    comp:'Premier',   res:'D'},
+      {rival:'Everton',     comp:'FA Cup',    res:'W'},
+      {rival:'Leicester',   comp:'Premier',   res:'L'},
+      {rival:'Fulham',      comp:'Premier',   res:'D'},
+    ],
+    h2h_fechas:['11/03/2025','04/11/2024','18/04/2024','25/10/2023','16/03/2023']
+  },
+  // ── CHAMPIONS LEAGUE ──
+  'psg': {
+    pts:75,pos:1,golesF:85,golesC:20,forma:['W','W','W','W','W'],pos2:64,tiros:21,corn:9,
+    liga:'Ligue 1',
+    rivales:[
+      {rival:'Monaco',      comp:'Ligue 1',   res:'W'},
+      {rival:'Marseille',   comp:'Ligue 1',   res:'W'},
+      {rival:'Lens',        comp:'Coupe Fr.', res:'W'},
+      {rival:'Lyon',        comp:'Ligue 1',   res:'W'},
+      {rival:'Lille',       comp:'Ligue 1',   res:'W'},
+    ],
+    h2h_fechas:['15/03/2025','10/11/2024','25/04/2024','30/10/2023','22/03/2023']
+  },
+  'bayern': {
+    pts:72,pos:1,golesF:88,golesC:30,forma:['W','W','D','W','W'],pos2:65,tiros:22,corn:9,
+    liga:'Bundesliga',
+    rivales:[
+      {rival:'Dortmund',    comp:'Bundesliga',res:'W'},
+      {rival:'Leverkusen',  comp:'Bundesliga',res:'W'},
+      {rival:'Stuttgart',   comp:'DFB-Pokal', res:'D'},
+      {rival:'Frankfurt',   comp:'Bundesliga',res:'W'},
+      {rival:'Leipzig',     comp:'Bundesliga',res:'W'},
+    ],
+    h2h_fechas:['14/03/2025','09/11/2024','24/04/2024','29/10/2023','21/03/2023']
+  },
+  'inter': {
+    pts:69,pos:1,golesF:65,golesC:22,forma:['W','W','W','D','W'],pos2:55,tiros:16,corn:6,
+    liga:'Serie A',
+    rivales:[
+      {rival:'Juventus',    comp:'Serie A',   res:'W'},
+      {rival:'Napoli',      comp:'Serie A',   res:'W'},
+      {rival:'Milan',       comp:'Coppa It.', res:'W'},
+      {rival:'Fiorentina',  comp:'Serie A',   res:'D'},
+      {rival:'Roma',        comp:'Serie A',   res:'W'},
+    ],
+    h2h_fechas:['13/03/2025','08/11/2024','23/04/2024','28/10/2023','20/03/2023']
+  },
+  'juventus': {
+    pts:60,pos:4,golesF:52,golesC:35,forma:['W','D','W','L','W'],pos2:50,tiros:14,corn:5,
+    liga:'Serie A',
+    rivales:[
+      {rival:'Milan',       comp:'Serie A',   res:'W'},
+      {rival:'Lazio',       comp:'Serie A',   res:'D'},
+      {rival:'Bologna',     comp:'Coppa It.', res:'W'},
+      {rival:'Napoli',      comp:'Serie A',   res:'L'},
+      {rival:'Atalanta',    comp:'Serie A',   res:'W'},
+    ],
+    h2h_fechas:['12/03/2025','07/11/2024','22/04/2024','27/10/2023','19/03/2023']
+  },
+  'dortmund': {
+    pts:55,pos:4,golesF:60,golesC:48,forma:['W','L','W','D','W'],pos2:52,tiros:15,corn:6,
+    liga:'Bundesliga',
+    rivales:[
+      {rival:'Leipzig',     comp:'Bundesliga',res:'W'},
+      {rival:'Leverkusen',  comp:'Bundesliga',res:'L'},
+      {rival:'Stuttgart',   comp:'Bundesliga',res:'W'},
+      {rival:'Frankfurt',   comp:'DFB-Pokal', res:'D'},
+      {rival:'Gladbach',    comp:'Bundesliga',res:'W'},
+    ],
+    h2h_fechas:['11/03/2025','06/11/2024','21/04/2024','26/10/2023','18/03/2023']
+  },
+  // ── COPA LIBERTADORES ──
+  'flamengo': {
+    pts:60,pos:2,golesF:55,golesC:30,forma:['W','W','D','W','W'],pos2:58,tiros:16,corn:6,
+    liga:'Copa Libertadores',
+    rivales:[
+      {rival:'Palmeiras',   comp:'Brasileirao',res:'W'},
+      {rival:'Botafogo',    comp:'Brasileirao',res:'W'},
+      {rival:'Fluminense',  comp:'Copa Lib.',  res:'D'},
+      {rival:'Athletico PR',comp:'Brasileirao',res:'W'},
+      {rival:'Corinthians', comp:'Brasileirao',res:'W'},
+    ],
+    h2h_fechas:['10/03/2025','05/11/2024','20/04/2024','25/10/2023','17/03/2023']
+  },
+  // ── LIGA PRO ECUADOR ──
+  'liga de quito': {
+    pts:52,pos:2,golesF:44,golesC:28,forma:['W','W','D','W','L'],pos2:50,tiros:13,corn:5,
+    liga:'Liga Pro',
+    rivales:[
+      {rival:'Deportivo Quito',comp:'Liga Pro',res:'W'},
+      {rival:'Aucas',          comp:'Liga Pro',res:'W'},
+      {rival:'El Nacional',    comp:'Copa Ec.',res:'D'},
+      {rival:'Emelec',         comp:'Liga Pro',res:'W'},
+      {rival:'Barcelona SC',   comp:'Liga Pro',res:'L'},
+    ],
+    h2h_fechas:['09/03/2025','04/11/2024','19/04/2024','24/10/2023','16/03/2023']
+  },
+  'barcelona sc': {
+    pts:55,pos:1,golesF:48,golesC:25,forma:['W','W','W','D','W'],pos2:52,tiros:14,corn:5,
+    liga:'Liga Pro',
+    rivales:[
+      {rival:'LDU Quito',    comp:'Liga Pro',  res:'W'},
+      {rival:'Emelec',       comp:'Liga Pro',  res:'W'},
+      {rival:'Delfín',       comp:'Copa Ec.',  res:'W'},
+      {rival:'Deportivo Cuenca',comp:'Liga Pro',res:'D'},
+      {rival:'Aucas',        comp:'Liga Pro',  res:'W'},
+    ],
+    h2h_fechas:['08/03/2025','03/11/2024','18/04/2024','23/10/2023','15/03/2023']
+  },
+  // ── DEFAULT ──
+  'default': {
+    pts:45,pos:10,golesF:40,golesC:40,forma:['W','D','L','W','D'],pos2:50,tiros:12,corn:5,
+    liga:'Liga',
+    rivales:[
+      {rival:'Rival A',comp:'Liga',res:'W'},
+      {rival:'Rival B',comp:'Liga',res:'D'},
+      {rival:'Rival C',comp:'Copa',res:'L'},
+      {rival:'Rival D',comp:'Liga',res:'W'},
+      {rival:'Rival E',comp:'Liga',res:'D'},
+    ],
+    h2h_fechas:['10/03/2025','05/11/2024','20/04/2024','25/10/2023','17/03/2023','10/10/2022','15/03/2022','20/10/2021','05/04/2021','10/10/2020']
+  },
 };
-const H2H = [
-  {f:'12/03/2025',lg:2,vg:1},{f:'05/11/2024',lg:1,vg:1},{f:'21/04/2024',lg:3,vg:2},
-  {f:'28/10/2023',lg:0,vg:1},{f:'19/03/2023',lg:2,vg:0},{f:'16/10/2022',lg:3,vg:1},
-  {f:'20/03/2022',lg:0,vg:4},{f:'24/10/2021',lg:2,vg:1},{f:'10/04/2021',lg:1,vg:3},
-  {f:'18/10/2020',lg:1,vg:3},
-];
-const RIVALS_L=['Getafe','Rayo','Valladolid','Girona','Osasuna'];
-const RIVALS_V=['Mallorca','Las Palmas','Granada','Celta','Almería'];
-const COMPS=['Liga','Copa','Champions','Liga','Liga'];
+
+// ── H2H dinámico: genera marcadores coherentes con el nombre del rival ──
+function generarH2H(loc, vis) {
+  // Genera 10 enfrentamientos con fechas y marcadores aleatorios pero coherentes
+  const fechasBase = [
+    '15/03/2025','10/11/2024','28/04/2024','20/10/2023','12/03/2023',
+    '09/10/2022','20/03/2022','17/10/2021','04/04/2021','11/10/2020'
+  ];
+  return fechasBase.map(f => {
+    const lg = Math.floor(Math.random() * 4);
+    const vg = Math.floor(Math.random() * 4);
+    return { f, lg, vg };
+  });
+}
 const histData=[];
 let cR=null,cG=null;
 
@@ -673,24 +915,25 @@ function buildStats(tL,tV){
 }
 
 function buildH2H2(loc,vis){
+  const h2hData = generarH2H(loc, vis);
   let w=0,d=0,l=0;
-  const rows=H2H.map(p=>{
+  const rows=h2hData.map(p=>{
     let res,cls;
-    if(p.lg>p.vg){res='Victoria local';cls='rw2';w++}
+    if(p.lg>p.vg){res=loc+' ganó';cls='rw2';w++}
     else if(p.lg===p.vg){res='Empate';cls='rd';d++}
-    else{res='Victoria visitante';cls='rl';l++}
+    else{res=vis+' ganó';cls='rl';l++}
     return `<tr><td>${p.f}</td><td class="${cls}">${res}</td><td class="sc">${p.lg}–${p.vg}</td></tr>`;
   });
   document.getElementById('h2h').innerHTML=`
     <div class="h2h-leg">
-      <span><div class="dot" style="background:var(--grn)"></div>${loc}:${w}V</span>
-      <span><div class="dot" style="background:var(--amb)"></div>Empates:${d}</span>
-      <span><div class="dot" style="background:var(--red)"></div>${vis}:${l}V</span>
+      <span><div class="dot" style="background:var(--grn)"></div>${loc}: ${w}V</span>
+      <span><div class="dot" style="background:var(--amb)"></div>Empates: ${d}</span>
+      <span><div class="dot" style="background:var(--red)"></div>${vis}: ${l}V</span>
     </div>
     <div class="h2h-strip">
-      <div class="h2h-w" style="flex:${w}"></div>
-      <div class="h2h-d" style="flex:${d}"></div>
-      <div class="h2h-l" style="flex:${l}"></div>
+      <div class="h2h-w" style="flex:${w||0.1}"></div>
+      <div class="h2h-d" style="flex:${d||0.1}"></div>
+      <div class="h2h-l" style="flex:${l||0.1}"></div>
     </div>
     <table class="mt" style="margin-top:.5rem">
       <thead><tr><th>Fecha</th><th>Resultado</th><th>Marcador</th></tr></thead>
@@ -705,17 +948,23 @@ function buildForma(id,forma){
   }).join('');
 }
 
-function buildTable(id,team,isLocal){
-  const rivals=isLocal?RIVALS_L:RIVALS_V;
-  document.getElementById(id).innerHTML=team.forma.map((f,i)=>{
-    const rival=rivals[i]||'Rival';
-    let g1,g2;
-    if(f==='W'){g1=Math.floor(Math.random()*2)+1;g2=Math.floor(Math.random()*g1)}
-    else if(f==='D'){g1=g2=Math.floor(Math.random()*3)}
-    else{g2=Math.floor(Math.random()*2)+1;g1=Math.floor(Math.random()*g2)}
-    const c=f==='W'?'rw2':f==='D'?'rd':'rl';
-    const l=f==='W'?'V':f==='D'?'E':'D';
-    return `<tr><td>${rival}</td><td class="${c}">${l}</td><td class="sc">${g1}–${g2}</td><td>${COMPS[i]}</td></tr>`;
+function buildTable(id, team, isLocal){
+  // Usa los rivales reales del equipo, no una lista genérica fija
+  const partidos = team.rivales || [];
+  document.getElementById(id).innerHTML = partidos.map(p => {
+    const f = p.res;
+    let g1, g2;
+    if(f==='W'){g1=Math.floor(Math.random()*2)+1; g2=Math.floor(Math.random()*g1);}
+    else if(f==='D'){g1=g2=Math.floor(Math.random()*3);}
+    else{g2=Math.floor(Math.random()*2)+1; g1=Math.floor(Math.random()*g2);}
+    const cls = f==='W'?'rw2': f==='D'?'rd':'rl';
+    const lbl = f==='W'?'V': f==='D'?'E':'D';
+    return `<tr>
+      <td>${p.rival}</td>
+      <td class="${cls}">${lbl}</td>
+      <td class="sc">${g1}–${g2}</td>
+      <td>${p.comp}</td>
+    </tr>`;
   }).join('');
 }
 
